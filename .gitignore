@@ -1,0 +1,25 @@
+# Environment — never commit real keys
+.env
+.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Data
+data/*.db
+
+# IDE
+.vscode/
+.idea/
+
+# Node (MCP servers installed via npx — no node_modules to commit)
+node_modules/
+
+# OS
+.DS_Store
