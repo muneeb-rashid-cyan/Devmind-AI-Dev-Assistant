@@ -11,7 +11,7 @@ The Filesystem MCP is an MCP server auto-discovered at runtime.
 
 from agents import Agent
 from agents.mcp import MCPServerStdio
-from ..tools.web_search import web_search
+from ..tools.web_search import get_search_tool
 from .. import config
 
 
@@ -58,10 +58,11 @@ def create_web_research_agent(filesystem_mcp: MCPServerStdio) -> Agent:
 
     The filesystem_mcp must already be started (via context manager in main).
     """
+    search_tool = get_search_tool()
     return Agent(
         name="Web Research Agent",
         instructions=WEB_RESEARCH_INSTRUCTIONS,
         model=config.SPECIALIST_MODEL,
-        tools=[web_search],
+        tools=[search_tool],
         mcp_servers=[filesystem_mcp],
     )
