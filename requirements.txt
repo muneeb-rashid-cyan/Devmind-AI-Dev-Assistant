@@ -3,3 +3,4 @@ python-dotenv==1.0.1
 rich>=13.7.0
 pydantic>=2.12.2
 duckduckgo-search>=6.2.0
+tavily-python>=0.5.0
