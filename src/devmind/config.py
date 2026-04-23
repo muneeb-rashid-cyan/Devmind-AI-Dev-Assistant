@@ -21,6 +21,9 @@ FS_ROOT_PATH: str = os.getenv("FS_ROOT_PATH", str(Path.home()))
 SESSION_ID: str = os.getenv("SESSION_ID", "devmind-user")
 DB_PATH: str = os.getenv("DB_PATH", "data/conversations.db")
 
+# ── Tavily (optional) ─────────────────────────────────────────────────────────
+TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
+
 # ── Models ─────────────────────────────────────────────────────────────────────
 TRIAGE_MODEL: str = os.getenv("TRIAGE_MODEL", "gpt-4o-mini")
 SPECIALIST_MODEL: str = os.getenv("SPECIALIST_MODEL", "gpt-4o")

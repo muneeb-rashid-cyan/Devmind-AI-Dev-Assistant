@@ -1,12 +1,14 @@
 """
-DuckDuckGo web search tool — no API key required.
+Web search tools — DuckDuckGo (no key) + Tavily (optional, higher quality).
 
-Uses the `duckduckgo-search` Python package which scrapes DuckDuckGo.
-Exposed as a function tool so the Web Research Agent can call it directly.
+DuckDuckGo is always available.  Tavily is only available when TAVILY_API_KEY
+is set in the environment.
 """
 
 from agents import function_tool
 from duckduckgo_search import DDGS
+
+from .. import config
 
 
 @function_tool
@@ -38,6 +40,62 @@ def web_search(query: str, max_results: int = 5) -> str:
         title   = r.get("title", "No title")
         url     = r.get("href", "")
         snippet = r.get("body", "No description available.")
+        lines.append(f"{i}. {title}")
+        lines.append(f"   URL: {url}")
+        lines.append(f"   {snippet}\n")
+
+    return "\n".join(lines)
+
+
+# ── Tavily search (available only when TAVILY_API_KEY is configured) ─────────
+
+_tavily_client = None
+
+
+def _get_tavily_client():
+    """Lazily initialise and return the TavilyClient singleton."""
+    global _tavily_client
+    if _tavily_client is None:
+        from tavily import TavilyClient
+        _tavily_client = TavilyClient(api_key=config.TAVILY_API_KEY)
+    return _tavily_client
+
+
+@function_tool
+def tavily_search(query: str, max_results: int = 5) -> str:
+    """
+    Search the web using Tavily and return a formatted summary of results.
+    Tavily is optimised for AI-driven research and returns highly relevant results.
+
+    Args:
+        query:       The search query string.
+        max_results: Number of results to return (default 5, max 10).
+
+    Returns:
+        A formatted string with titles, URLs, and snippets for each result.
+        Returns an error message if the search fails.
+    """
+    max_results = min(max_results, 10)
+
+    try:
+        client = _get_tavily_client()
+        response = client.search(
+            query=query,
+            max_results=max_results,
+            search_depth="basic",
+        )
+        results = response.get("results", [])
+    except Exception as exc:
+        return f"Tavily search failed: {exc}. Try rephrasing the query or use web_search as fallback."
+
+    if not results:
+        return f"No results found for: '{query}'. Try a different search term."
+
+    lines = [f"Search results for: '{query}'\n"]
+    for i, r in enumerate(results, 1):
+        title   = r.get("title", "No title")
+        url     = r.get("url", "")
+        snippet = r.get("content", "No description available.")
         lines.append(f"{i}. {title}")
         lines.append(f"   URL: {url}")
         lines.append(f"   {snippet}\n")
