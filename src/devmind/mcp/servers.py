@@ -1,7 +1,7 @@
 """
 MCP Server factories.
 
-Both servers run as local subprocesses launched via npx.
+The filesystem and GitHub servers run as local subprocesses launched via npx.
 No npm install required — npx downloads the package on first run.
 
 Available MCP servers (zero manual tool setup):
@@ -9,8 +9,8 @@ Available MCP servers (zero manual tool setup):
   - @modelcontextprotocol/server-github     → search_repositories, search_code, get_file_contents,
                                               list_commits, get_issues, create_issue, fork_repository
 
-Note: Web search uses DuckDuckGo via a Python function tool (no MCP, no API key needed).
-See src/devmind/tools/web_search.py
+Web research defaults to the DuckDuckGo Python function tool. The optional
+Parallel Search MCP uses Streamable HTTP, with no subprocess or Parallel key.
 
 Usage (async context manager):
     async with filesystem_mcp_server() as fs:
@@ -23,8 +23,25 @@ Or compose multiple servers on one agent:
 """
 
 import os
-from agents.mcp import MCPServerStdio
+from agents.mcp import MCPServerStdio, MCPServerStreamableHttp
 from .. import config
+
+
+def parallel_search_mcp_server() -> MCPServerStreamableHttp:
+    """Anonymous Parallel web_search and web_fetch over Streamable HTTP."""
+    return MCPServerStreamableHttp(
+        name="Parallel Search",
+        params={
+            "url": "https://search.parallel.ai/mcp",
+            "headers": {
+                "User-Agent": "Devmind-AI-Dev-Assistant (https://github.com/muneeb-rashid-cyan/Devmind-AI-Dev-Assistant)",
+            },
+            "timeout": 30,
+            "sse_read_timeout": 60,
+        },
+        cache_tools_list=True,
+        client_session_timeout_seconds=60,
+    )
 
 
 def filesystem_mcp_server() -> MCPServerStdio:

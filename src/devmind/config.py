@@ -25,6 +25,9 @@ DB_PATH: str = os.getenv("DB_PATH", "data/conversations.db")
 TRIAGE_MODEL: str = os.getenv("TRIAGE_MODEL", "gpt-4o-mini")
 SPECIALIST_MODEL: str = os.getenv("SPECIALIST_MODEL", "gpt-4o")
 
+# Web research: keep the local DuckDuckGo tool unless explicitly opted in.
+WEB_SEARCH_PROVIDER: str = os.getenv("WEB_SEARCH_PROVIDER", "duckduckgo").strip().lower()
+
 # ── Output guardrail ───────────────────────────────────────────────────────────
 MAX_RESPONSE_CHARS: int = 2000  # cap for text responses
 

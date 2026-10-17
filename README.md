@@ -74,6 +74,33 @@ No tool functions written. Agents auto-discover tools from MCP servers at runtim
 
 > Web search uses the `duckduckgo-search` Python package — no API key, no MCP server needed.
 
+### Optional: Parallel web research
+
+Set `WEB_SEARCH_PROVIDER=parallel` in your `.env` to use
+[Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+for web search and page fetching. It connects to `https://search.parallel.ai/mcp`
+over Streamable HTTP using the existing OpenAI Agents SDK dependency.
+No Parallel account or API key is needed. Anonymous search uses Fast mode and
+has usage limits.
+
+```env
+WEB_SEARCH_PROVIDER=parallel
+```
+
+Start DevMind with the usual `python -m src.devmind.main` command. Try:
+
+```text
+Find the current OpenAI Agents SDK handoff documentation, fetch the relevant page, and explain how to pass structured handoff data.
+```
+
+The Web Research Agent discovers `web_search` and `web_fetch` from Parallel;
+its filesystem tools still save reports. This selection replaces the DuckDuckGo
+function tool for web research, avoiding duplicate `web_search` tool names.
+The OpenAI and GitHub credentials in the setup below are still required.
+If Parallel is unavailable, startup or the tool call reports an error; it does
+not silently switch providers. Set `WEB_SEARCH_PROVIDER=duckduckgo` or remove
+the variable to return to the default DuckDuckGo tool.
+
 ---
 
 ## Guardrails

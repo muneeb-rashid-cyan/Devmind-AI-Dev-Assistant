@@ -16,7 +16,7 @@ Architecture:
         → Triage Agent (GPT-4o-mini, routes the request)
             ├── Code Review Agent  → Filesystem MCP + GitHub MCP
             ├── Repo Search Agent  → GitHub MCP + Filesystem MCP
-            └── Web Research Agent → DuckDuckGo tool + Filesystem MCP
+            └── Web Research Agent → selected web search + Filesystem MCP
         → SQLiteSession (persists conversation history)
         → Printed response
 """
@@ -31,7 +31,7 @@ from agents import Runner, InputGuardrailTripwireTriggered, OutputGuardrailTripw
 from .mcp.servers import filesystem_mcp_server, github_mcp_server
 from .agents.code_review_agent import create_code_review_agent
 from .agents.repo_search_agent import create_repo_search_agent
-from .agents.web_research_agent import create_web_research_agent
+from .agents.web_research_agent import open_web_research_agent
 from .agents.triage_agent import create_triage_agent
 from .session.memory import get_session
 from . import config
@@ -62,7 +62,10 @@ def _print_banner() -> None:
 def _print_agents_ready() -> None:
     print(f"\n  {GREEN}✓ Filesystem MCP   — local file access{RESET}")
     print(f"  {GREEN}✓ GitHub MCP       — repo search + code read{RESET}")
-    print(f"  {GREEN}✓ DuckDuckGo tool  — web search (no API key){RESET}")
+    if config.WEB_SEARCH_PROVIDER == "parallel":
+        print(f"  {GREEN}✓ Parallel MCP     — web search + page fetching (no Parallel key){RESET}")
+    else:
+        print(f"  {GREEN}✓ DuckDuckGo tool  — web search (no API key){RESET}")
     print(f"\n  {BOLD}Agents ready:{RESET}")
     print(f"  {CYAN}Triage{RESET} → {GREEN}Code Review{RESET} | {GREEN}Repo Search{RESET} | {GREEN}Web Research{RESET}")
     print(f"\n  {DIM}Type your question. 'exit' to quit. 'clear' for new session.{RESET}\n")
@@ -110,7 +113,7 @@ async def main() -> None:
 
     # Start both MCP servers as async context managers.
     # They run as subprocesses for the lifetime of the session.
-    # Web search uses DuckDuckGo (Python tool, no subprocess needed).
+    # The optional Parallel connection shares this stack's lifetime.
     async with AsyncExitStack() as stack:
         fs_mcp = await stack.enter_async_context(filesystem_mcp_server())
         gh_mcp = await stack.enter_async_context(github_mcp_server())
@@ -118,7 +121,7 @@ async def main() -> None:
         # Wire agents — specialists get their MCP servers, triage gets specialists
         code_review_agent  = create_code_review_agent(fs_mcp, gh_mcp, project_dir=os.getcwd())
         repo_search_agent  = create_repo_search_agent(gh_mcp, fs_mcp)
-        web_research_agent = create_web_research_agent(fs_mcp)
+        web_research_agent = await stack.enter_async_context(open_web_research_agent(fs_mcp))
         triage_agent       = create_triage_agent(
             code_review_agent,
             repo_search_agent,

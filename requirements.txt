@@ -1,4 +1,6 @@
 openai-agents==0.11.1
+# Match the usage schema expected by the pinned Agents SDK.
+openai==2.26.0
 python-dotenv==1.0.1
 rich>=13.7.0
 pydantic>=2.12.2
