@@ -47,6 +47,15 @@ python -m src.devmind.main
 - Multi-MCP — one agent using 2 MCP servers simultaneously
 - `handoff()` with `input_type` — structured handoff metadata
 - `SQLiteSession` — persistent cross-turn memory
+
+## Optional Parallel Web Research
+`WEB_SEARCH_PROVIDER` defaults to `duckduckgo`. Set it to `parallel` to use
+`MCPServerStreamableHttp` at `https://search.parallel.ai/mcp` for `web_search`
+and `web_fetch`, without a Parallel API key. `open_web_research_agent` owns the
+connection lifetime; the local DuckDuckGo tool is omitted in this mode to avoid
+duplicate tool names. Filesystem access and other agents are unchanged.
+See the README for setup and usage. Run provider tests with
+`python -m unittest discover -s tests -v` after installing `requirements.txt`.
 - `@input_guardrail` / `@output_guardrail` — tripwire pattern
 
 ## Environment Variables
